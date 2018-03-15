@@ -2,8 +2,8 @@ import { is, fromJS, toJS, Map, List, Record, Seq } from 'immutable'
 
 console.log(`=====Map=====`)
 // Map: Creates a new Immutable Map
-console.log(Map({ x: '123' }))
-console.log(Map([['x', '123']])) // {"x" : "123"}
+console.log(Map({ x: '123' })) // {"x" : "123"}
+console.log(Map([['x', '123'], ['y', '234']])) // {"x" : "123", "y", "234"}
 
 console.log(`=====List=====`)
 // List: Create a new immutable List containing the values of the provided collection-like
@@ -45,8 +45,10 @@ console.log(`=====set=====`)
 // Set: set values to Map and List
 // It will Set first element
 const setObj = Map({ a: { a: 34 }, b: 2, c: 3, d: 444 })
-console.log(`Set Object: ${setObj.set('a', 0)}`) // { "a": 0, "b": 2, "c": 3, "d": 444 }
-console.log(`Set Object: ${setObj.set('e', 99)}`) // { "a": [object Object], "b": 2, "c": 3, "d": 444, "e": 99 }
+console.log(`Set Object: ${setObj.set('a', 0)}`)
+// { "a": 0, "b": 2, "c": 3, "d": 444 }
+console.log(`Set Object: ${setObj.set('e', 99)}`)
+// { "a": [object Object], "b": 2, "c": 3, "d": 444, "e": 99 }
 
 const setList = List([1, 2, 3])
 console.log(setList.set(-1, 0)) // [1, 2, 0]  set the last element
@@ -55,20 +57,18 @@ console.log(setList.set(4, 0)) // [ 1, 2, 3, undefined, 0 ]  empty element will 
 console.log(`=====setIn=====`)
 // SetIn(keyPath, value): Returns a new Map having set value at this keyPath.
 // If any keys in keyPath do not exist, a new immutable Map will be created at that key.
-console.log(
-  `MapSetIn:
-  ${fromJS({ a: 45, b: 64, c: { a: 21 } }).setIn(['c', 'a'], 1000)}`,
-) // { "a": 45, "b": 64, "c": Map { "a": 1000 } }
+console.log(fromJS({ a: 45, b: 64, c: { a: 21 } }).setIn(['c', 'a'], 1000))
+// { "a": 45, "b": 64, "c": Map { "a": 1000 } }
 
 console.log(`=====get=====`)
 // get(key: number, notSetValue?: T)
 // List
 const getList = fromJS([1111111, 22222, { a: 888123 }])
-console.log(getList.get(0))
+console.log(getList.get(0)) // 1111111
 console.log(getList.get(11, 'no have value')) // no have value
 // getIn
-console.log(getList.getIn(['2', 'a'], 'child no have value'))
-console.log(getList.getIn(['2', 'b'], 'child no have value'))
+console.log(getList.getIn(['2', 'a'], 'child no have value')) // 888123
+console.log(getList.getIn(['2', 'b'], 'child no have value')) // child no have value
 
 // Map
 const getMap = fromJS({ a: { a1: 222 }, b: 2, c: 3, d: 444 })
@@ -83,24 +83,31 @@ console.log(`=====map, filter, every, some=====`)
 console.log(
   fromJS([1, 2, 3, 4, 5]).map((value, index, array) => {
     return value * 2
-  }),
-) // [2, 4, 6, 8, 10]
+  }), // [2, 4, 6, 8, 10]
+)
 
 //2. filter()
 console.log(
   fromJS([1, 2, 3, 4, 5]).filter((value, index, array) => {
     return value % 2 === 0
-  }),
-) // [2, 4]
+  }), // [2, 4]
+)
 
-//3. every()
+//3. reduce()
+console.log(
+  fromJS([1, 2, 3, 4, 5]).reduce(
+    (accumulater, currentValue) => accumulater + currentValue,
+  ), // 15
+)
+
+//4. every()
 console.log(
   fromJS([1, 2, 3, 4, 5]).every((value, index, array) => {
     return value > 2
   }),
 ) // false
 
-//4. some()
+//5. some()
 console.log(
   fromJS([1, 2, 3, 4, 5]).some((value, index, array) => {
     return value > 2
@@ -129,12 +136,12 @@ const mergeList = fromJS([1, 2, 3, 7, { a: { b: 55, c: 66 } }])
 const mergeList1 = fromJS([1, 2, 3, 6, { a: { b: 333, d: 67 } }])
 
 // shallow merge
-console.log(mergeList.merge(mergeList1), mergeList)
-// mergeList1 -> mergeList [1, 2, 3, 6, {b: 333, d: 67}] [1, 2, 3, 7, {a: {b: 55, c: 66}}]
+console.log(mergeList.merge(mergeList1))
+// [1, 2, 3, 6, { a: {b: 333, d: 67}]
 
 // deep merge
-console.log(mergeList.mergeDeep(mergeList1), mergeList)
-// mergeList1 -> mergeList [1, 2, 3, 6, {b: 333, c: 66, d: 67}] [1, 2, 3, 7, {a: {b: 55, c: 66}}]
+console.log(mergeList.mergeDeep(mergeList1))
+// [1, 2, 3, 6, {b: 333, c: 66, d: 67}]
 
 // define merge rules
 console.log(
@@ -190,6 +197,7 @@ const ImmutableList = pushList
 console.log(ImmutableList, pushList) // [1, 2, 3, 4, 5, 6]
 
 /**
+ * Note: Not all methods can be safely used on a mutable collection or within withMutations! 
  * These common methods can return general List/Map
  * Map: set(), merge()
  * List: push(), pop(), shift(), unshift()
